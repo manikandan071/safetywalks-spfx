@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "18.18.1",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.18.2",
+    "libraryName": "safetywalks-solution",
+    "libraryId": "8b01a87e-9e0d-41aa-9e46-800f5d8f6d75",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "safetywalks-solution",
+    "solutionShortDescription": "safetywalks-solution description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

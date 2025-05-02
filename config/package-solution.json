@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "safetywalks-solution-client-side-solution",
+    "id": "8b01a87e-9e0d-41aa-9e46-800f5d8f6d75",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "safetywalks-solution description"
+      },
+      "longDescription": {
+        "default": "safetywalks-solution description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "safetywalks-solution Feature",
+        "description": "The feature that activates elements of the safetywalks-solution solution.",
+        "id": "d354598e-10f4-4a5d-9556-04f36c5e40d9",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/safetywalks-solution.sppkg"
+  }
+}
