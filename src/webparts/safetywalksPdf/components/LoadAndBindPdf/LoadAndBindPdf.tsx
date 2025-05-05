@@ -82,8 +82,6 @@ const LoadAndBindPdf = () => {
   };
 
   const processPdf = async (CustDetails: any) => {
-    console.log("Customer Details", CustDetails);
-
     const sectionElements = document.querySelector("#divToPrint");
     if (sectionElements) {
       const htmlContent = sectionElements.innerHTML;
@@ -104,7 +102,6 @@ const LoadAndBindPdf = () => {
       const cleanedHtml = container.innerHTML;
       let pdfContent = await htmlToPdfmake(cleanedHtml);
       pdfContent = enforceTableWidths(pdfContent);
-      console.log("pdfContent", pdfContent);
 
       const finalContent = pdfContent.map((item: any) => {
         if (Array.isArray(item.style) && item.style.includes("sectionTitle")) {
@@ -133,7 +130,6 @@ const LoadAndBindPdf = () => {
         }
       });
 
-      console.log("finalContent", finalContent);
       const pdfStructure = {
         header: () => {},
         footer: (currentPage: any, pageCount: any) => {
@@ -170,8 +166,6 @@ const LoadAndBindPdf = () => {
       };
       const pdfDocGenerator = await pdfMake.createPdf(pdfStructure);
       await pdfDocGenerator.getDataUrl(async (dataUrl: string) => {
-        console.log("dataUrl", dataUrl);
-
         if (!dataUrl) {
           console.log("Failed to generate data URL for the PDF.");
           return;
@@ -180,11 +174,10 @@ const LoadAndBindPdf = () => {
         const pdfBlob = await dataUrlToBlob(dataUrl);
         if (pdfBlob) {
           const filePath = `pdfLibrary/${CustDetails?.Customer}.pdf`;
-          const result = await sp.web
+          await sp.web
             .getFolderByServerRelativeUrl("pdfLibrary")
             .files.add(filePath, pdfBlob, true)
             .then(async (res: any) => {
-              console.log("res", res);
               // Get list item for the uploaded file
               const item = await res.file.getItem();
 
@@ -192,15 +185,11 @@ const LoadAndBindPdf = () => {
               await item.update({
                 EventDetailsId: CustDetails?.Id,
               });
-
-              console.log("Metadata updated successfully");
               setShowModal(false);
             })
             .catch((err: any) => {
               console.log("Error : ", err);
             });
-
-          console.log("result", result);
         } else {
           console.log("Not Uploaded");
         }
@@ -260,7 +249,6 @@ const LoadAndBindPdf = () => {
     const params = new URLSearchParams(window.location.search);
     const idParam = params.get("eventId");
     const numericId = idParam ? Number(idParam) : null;
-    console.log("numericId", params, idParam, numericId);
 
     if (!numericId) {
       console.error("Invalid ID parameter:", idParam);
@@ -271,21 +259,17 @@ const LoadAndBindPdf = () => {
       const CustomerDetails = await sp.web.lists
         .getByTitle("WalkConfig")
         .items.getById(numericId ?? 0)
-        .get(); // Ensure numericId is not null
-      console.log("data", CustomerDetails);
+        .get();
 
       setCustomerDetails(CustomerDetails);
 
       configType = CustomerDetails.ConfigType.split(" ")[0];
-      console.log("configType", configType);
 
       let categorySNoData = await sp.web.lists
         .getByTitle("CategoryConfig")
         .items.filter(`WalkType eq '${configType}'`)
         .getAll();
       categorySNoData = categorySNoData.sort((a: any, b: any) => a.SNo - b.SNo);
-
-      console.log("categorySNoData", categorySNoData);
 
       const categoryQuestions = await sp.web.lists
         .getByTitle("WalkDetails")
@@ -305,7 +289,6 @@ const LoadAndBindPdf = () => {
           (rankMap.get(a.CategoryConfigId) ?? Infinity) -
           (rankMap.get(b.CategoryConfigId) ?? Infinity)
       );
-      console.log("sortedArray", sortedArray);
 
       // Now, fetch attachments for each item
       const itemsWithAttachments = await Promise.all(
@@ -330,11 +313,10 @@ const LoadAndBindPdf = () => {
 
           return {
             ...item,
-            attachments: attachmentsBase64, // Array of { FileName, ServerRelativeUrl }
+            attachments: attachmentsBase64,
           };
         })
       );
-      console.log("itemsWithAttachments", itemsWithAttachments);
 
       const outputArray: any[] = [];
       categorySNoData.forEach((configItem) => {
@@ -349,19 +331,17 @@ const LoadAndBindPdf = () => {
           });
         }
       });
-      console.log("outputArray", outputArray);
       setCategoryAndQuestions([...outputArray]);
       setTimeout(async () => {
         await processPdf(CustomerDetails);
       }, 3000);
     } catch (error) {
-      console.error("Error fetching SharePoint data:", error);
+      console.log("Error fetching SharePoint data:", error);
     }
   };
 
   useEffect(() => {
     getSharepointData();
-    // processPdf();
   }, []);
 
   const bindImages = (data: any[]): JSX.Element[] => {
@@ -378,7 +358,6 @@ const LoadAndBindPdf = () => {
               border: "none",
               paddingTop: "10px",
               margin: "10px",
-              // borderBottom: "1px solid #e0e0e0",
             }}
             className="tableCell"
           >
@@ -395,7 +374,6 @@ const LoadAndBindPdf = () => {
                 border: "none",
                 padding: "10px",
                 margin: "10px",
-                // borderBottom: "1px solid #e0e0e0",
               }}
               className="tableCell"
             >
@@ -433,7 +411,7 @@ const LoadAndBindPdf = () => {
     ).length;
     const percentage = (passCount / items.length) * 100;
 
-    return Math.round(percentage); // return as rounded integer
+    return Math.round(percentage);
   };
   const calculateOverallFailPercentage = (items: any) => {
     const allQuestions = items.flatMap((item: any) => item.Questions);
@@ -444,13 +422,11 @@ const LoadAndBindPdf = () => {
 
     const failPercentage = Math.round((failCount / total) * 100);
 
-    return Math.round(failPercentage); // return as rounded integer
+    return Math.round(failPercentage);
   };
 
   return (
     <div>
-      {/* <button onClick={processPdf}>Generate PDF</button> */}
-      {/* <Loader /> */}
       {showModal ? (
         <Loader />
       ) : (
@@ -516,10 +492,6 @@ const LoadAndBindPdf = () => {
                         Fail
                       </td>
                     </tr>
-                    // <div className="sectionTitle" style={{ color: "red" }}>
-                    //   {category.title}{" "}
-                    //   {calculateCategoryPassPercentage(category.Questions)}%
-                    // </div>
                   )
                 );
               })}
@@ -614,8 +586,6 @@ const LoadAndBindPdf = () => {
                                 </tr>
                               </tbody>
                             </table>
-
-                            {/* {question.Question} */}
                           </td>
                           <td
                             style={{
