@@ -10,11 +10,13 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import Loader from "../Loader/Loader";
 import {
+  fail64String,
   // categoryBase64String,
-  greenbase64String,
+  // greenbase64String,
   logoBase64String,
-  questionBase64String,
-  redbase64String,
+  pass64String,
+  // questionBase64String,
+  // redbase64String,
 } from "./base64";
 // import { FontSizes } from "@fluentui/react";
 
@@ -29,6 +31,7 @@ const LoadAndBindPdf = () => {
   const [categoryAndQuestions, setCategoryAndQuestions] = useState<any[]>([]);
   const [customerDetails, setCustomerDetails] = useState<any>({});
   const [showModal, setShowModal] = useState(true);
+  console.log("categoryAndQuestions", categoryAndQuestions);
 
   const dataUrlToBlob = async (dataUrl: any) => {
     const byteString = atob(dataUrl.split(",")[1]);
@@ -55,6 +58,27 @@ const LoadAndBindPdf = () => {
         node.borderColor = "#e0e0e0";
         node.margin = [0, 5, 0, 15];
         node.alignment = "center";
+      }
+      if (node.style && node.style.includes("sectionTitle")) {
+        const sectionText = {
+          text: node.text || "",
+          bold: true,
+          color: "#2e238b",
+          fontSize: 14,
+          margin: [10, 5, 0, 5],
+        };
+
+        return {
+          table: {
+            widths: ["*"],
+            body: [[sectionText]],
+          },
+          layout: {
+            fillColor: () => "#e0e0e0",
+            defaultBorder: false,
+          },
+          margin: [0, 5, 0, 5],
+        };
       }
       // Check if the current node is a table with 'mainTable' class
       const isMainTable =
@@ -102,6 +126,7 @@ const LoadAndBindPdf = () => {
       const cleanedHtml = container.innerHTML;
       let pdfContent = await htmlToPdfmake(cleanedHtml);
       pdfContent = enforceTableWidths(pdfContent);
+      console.log("pdfContent", pdfContent);
 
       const finalContent = pdfContent.map((item: any) => {
         if (Array.isArray(item.style) && item.style.includes("sectionTitle")) {
@@ -334,7 +359,7 @@ const LoadAndBindPdf = () => {
       setCategoryAndQuestions([...outputArray]);
       setTimeout(async () => {
         await processPdf(CustomerDetails);
-      }, 3000);
+      }, 2000);
     } catch (error) {
       console.log("Error fetching SharePoint data:", error);
     }
@@ -417,7 +442,7 @@ const LoadAndBindPdf = () => {
     const allQuestions = items.flatMap((item: any) => item.Questions);
     const total = allQuestions.length;
     const failCount = allQuestions.filter(
-      (q: any) => q.Status === "Fail"
+      (q: any) => q.Status !== "Pass"
     ).length;
 
     const failPercentage = Math.round((failCount / total) * 100);
@@ -441,9 +466,30 @@ const LoadAndBindPdf = () => {
         </div>
       )}
       <div style={{ width: "100%", display: "none" }} id="divToPrint">
-        <div>
-          <img width="170" height="45" src={logoBase64String} />
-        </div>
+        <table className="mainTable">
+          <tbody>
+            <tr>
+              <td
+                style={{
+                  border: "none",
+                  borderBottom: "1px solid #e0e0e0",
+                  backgroundColor: "#f9f9f9",
+                  marginBottom: "10px",
+                }}
+              >
+                <img width="170" height="45" src={logoBase64String} />
+              </td>
+              <td
+                style={{
+                  border: "none",
+                  borderBottom: "1px solid #e0e0e0",
+                  backgroundColor: "#f9f9f9",
+                  marginBottom: "10px",
+                }}
+              ></td>
+            </tr>
+          </tbody>
+        </table>
         {calculateOverallFailPercentage(categoryAndQuestions) !== 0 && (
           <table className="mainTable">
             <tbody>
@@ -456,7 +502,7 @@ const LoadAndBindPdf = () => {
                       color: "red",
                     }}
                   >
-                    Cotegories
+                    Categories
                   </div>
                 </td>
                 <td style={{ border: "none", backgroundColor: "#f9f9f9" }}>
@@ -475,10 +521,17 @@ const LoadAndBindPdf = () => {
               {categoryAndQuestions?.map((category) => {
                 return (
                   category.Questions.some(
-                    (item: any) => item.Status === "Fail"
+                    (item: any) => item.Status !== "Pass"
                   ) && (
                     <tr>
-                      <td style={{ border: "none", fontSize: "13px" }}>
+                      <td
+                        style={{
+                          border: "none",
+                          fontSize: "13px",
+                          color: "#2e238b",
+                          margin: "5px 0px",
+                        }}
+                      >
                         {category.title}
                       </td>
                       <td
@@ -487,6 +540,7 @@ const LoadAndBindPdf = () => {
                           color: "red",
                           fontSize: "13px",
                           fontWeight: "bold",
+                          margin: "5px 0px",
                         }}
                       >
                         Fail
@@ -541,7 +595,7 @@ const LoadAndBindPdf = () => {
         </div>
         {categoryAndQuestions.map((category) => {
           return (
-            <>
+            <div>
               <div className="sectionTitle">
                 {/* <img width="15" height="15" src={categoryBase64String} /> */}
                 {category.title}{" "}
@@ -567,12 +621,19 @@ const LoadAndBindPdf = () => {
                             <table>
                               <tbody>
                                 <tr>
-                                  <td style={{ border: "none" }}>
-                                    <img
+                                  <td
+                                    style={{
+                                      border: "none",
+                                      fontSize: "13px",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {/* <img
                                       width="15"
                                       height="15"
                                       src={questionBase64String}
-                                    />
+                                    /> */}
+                                    {question?.QuestionNo}.
                                   </td>
                                   <td
                                     style={{
@@ -581,7 +642,7 @@ const LoadAndBindPdf = () => {
                                       fontWeight: "bold",
                                     }}
                                   >
-                                    {question.Question}
+                                    {question?.Question}
                                   </td>
                                 </tr>
                               </tbody>
@@ -604,9 +665,9 @@ const LoadAndBindPdf = () => {
                                       width="15"
                                       height="15"
                                       src={
-                                        question?.Status === "Fail"
-                                          ? redbase64String
-                                          : greenbase64String
+                                        question?.Status !== "Pass"
+                                          ? fail64String
+                                          : pass64String
                                       }
                                     />
                                   </td>
@@ -617,7 +678,9 @@ const LoadAndBindPdf = () => {
                                       fontWeight: "bold",
                                     }}
                                   >
-                                    {question.Status}
+                                    {question?.Status !== "Pass"
+                                      ? "Fail"
+                                      : "Pass"}
                                   </td>
                                 </tr>
                               </tbody>
@@ -635,7 +698,7 @@ const LoadAndBindPdf = () => {
                           border: "none",
                           borderTop: "1px solid #e0e0e0",
                         }}
-                        className="borderBottom"
+                        className="borderBottom descriptions"
                       >
                         {question.ActionDescription}
                       </div>
@@ -645,7 +708,7 @@ const LoadAndBindPdf = () => {
               })}
               {/* </tbody>
               </table> */}
-            </>
+            </div>
           );
         })}
       </div>
