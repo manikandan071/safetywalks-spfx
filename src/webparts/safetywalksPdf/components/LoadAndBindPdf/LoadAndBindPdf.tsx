@@ -31,7 +31,6 @@ const LoadAndBindPdf = () => {
   const [categoryAndQuestions, setCategoryAndQuestions] = useState<any[]>([]);
   const [customerDetails, setCustomerDetails] = useState<any>({});
   const [showModal, setShowModal] = useState(true);
-  console.log("categoryAndQuestions", categoryAndQuestions);
 
   const dataUrlToBlob = async (dataUrl: any) => {
     const byteString = atob(dataUrl.split(",")[1]);
@@ -50,7 +49,6 @@ const LoadAndBindPdf = () => {
     if (Array.isArray(node)) {
       return node.map(enforceTableWidths);
     }
-
     if (typeof node === "object" && node !== null) {
       if (node.style && node.style.includes("borderBottom")) {
         // Add a bottom border if not already specified
@@ -101,7 +99,6 @@ const LoadAndBindPdf = () => {
         }
       }
     }
-
     return node;
   };
 
@@ -126,7 +123,6 @@ const LoadAndBindPdf = () => {
       const cleanedHtml = container.innerHTML;
       let pdfContent = await htmlToPdfmake(cleanedHtml);
       pdfContent = enforceTableWidths(pdfContent);
-      console.log("pdfContent", pdfContent);
 
       const finalContent = pdfContent.map((item: any) => {
         if (Array.isArray(item.style) && item.style.includes("sectionTitle")) {
@@ -270,6 +266,28 @@ const LoadAndBindPdf = () => {
     });
   };
 
+  function cropAndResizeBase64(base64: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 300;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+
+        const { width, height } = img;
+        const side = Math.min(width, height);
+        const sx = (width - side) / 2;
+        const sy = (height - side) / 2;
+
+        ctx?.drawImage(img, sx, sy, side, side, 0, 0, 300, 300);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = base64;
+    });
+  }
+
   const getSharepointData = async () => {
     const params = new URLSearchParams(window.location.search);
     const idParam = params.get("eventId");
@@ -331,7 +349,7 @@ const LoadAndBindPdf = () => {
               );
               return {
                 fileName: file.FileName,
-                base64,
+                base64: await cropAndResizeBase64(base64),
               };
             })
           );
@@ -383,13 +401,14 @@ const LoadAndBindPdf = () => {
               border: "none",
               paddingTop: "10px",
               margin: "10px",
+              textAlign: "center",
             }}
             className="tableCell"
           >
             <img
               alt={first.fileName}
-              width="250"
-              height="100"
+              width="200"
+              height="200"
               src={first.base64}
             />
           </td>
@@ -399,13 +418,14 @@ const LoadAndBindPdf = () => {
                 border: "none",
                 padding: "10px",
                 margin: "10px",
+                textAlign: "center",
               }}
               className="tableCell"
             >
               <img
                 alt={second.fileName}
-                width="250"
-                height="100"
+                width="200"
+                height="200"
                 src={second.base64}
               />
             </td>
@@ -457,6 +477,11 @@ const LoadAndBindPdf = () => {
       ) : (
         <div id="pdfSuccessMessage">
           <div style={{ textAlign: "center" }}>
+            <img
+              src={require("../../assets/Images/pdf.png")}
+              alt="Success"
+              style={{ width: "50px", height: "50px" }}
+            />
             <h2 id="pdfFileName">{customerDetails?.Customer}.pdf</h2>
             <p>
               <strong style={{ color: "green" }}>Success!</strong> The PDF was

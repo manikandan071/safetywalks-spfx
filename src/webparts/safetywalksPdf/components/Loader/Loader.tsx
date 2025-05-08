@@ -21,7 +21,7 @@ const LoadAndBindPdf = () => {
           <span></span>
           <span></span>
         </div>
-        <div className="text">Generating PDF...</div>
+        <div className="text">Generating pdf...</div>
       </div>
     </div>
   );

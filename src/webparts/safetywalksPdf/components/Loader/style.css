@@ -77,14 +77,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 30px;
+    height: 15px;
 }
 
 .dots-loader span {
     width: 12px;
     height: 12px;
     margin: 0 5px;
-    background-color: #00b894;
+    background-color: #7414cf;
     border-radius: 50%;
     animation: bounce 0.6s infinite alternate;
 }
@@ -108,8 +108,10 @@
     }
 }
 .text {
-    font-size: 18px;
-    color: #555;
-    font-family: Arial, sans-serif;
-    margin-left: 15px;
+    font-size: 20px;
+    color: #484e93;
+    /* font-family: Arial, sans-serif; */
+    margin-left: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
